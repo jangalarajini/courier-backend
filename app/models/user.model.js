@@ -18,6 +18,15 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.BLOB,
       allowNull: false,
     },
+    role: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    isOccupied: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false,
+      allowNull: true,
+    },
     salt: {
       type: Sequelize.BLOB,
       allowNull: false,
