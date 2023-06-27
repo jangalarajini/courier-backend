@@ -23,6 +23,10 @@ exports.create = async (req, res) => {
     const error = new Error("Password cannot be empty for user!");
     error.statusCode = 400;
     throw error;
+  }else if (req.body.role === undefined) {
+    const error = new Error("role cannot be empty for user!");
+    error.statusCode = 400;
+    throw error;
   }
 
   // find by email
@@ -46,6 +50,7 @@ exports.create = async (req, res) => {
           firstName: req.body.firstName,
           lastName: req.body.lastName,
           email: req.body.email,
+          role: req.body.role,
           password: hash,
           salt: salt,
         };
@@ -57,7 +62,7 @@ exports.create = async (req, res) => {
             let userId = data.id;
 
             let expireTime = new Date();
-            expireTime.setDate(expireTime.getDate() + 1);
+            expireTime.setDate(expireTime.getDate() + 1);     
 
             const session = {
               email: req.body.email,
@@ -220,3 +225,30 @@ exports.deleteAll = (req, res) => {
       });
     });
 };
+
+exports.findAllClerks = (req, res) => {
+  const role = 'clerk';
+  User.findAll({ where: { role } })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving clerks.",
+      });
+    });
+};
+
+exports.findAllCourierBoys = (req, res) => {
+  const role = 'courierboy';
+  User.findAll({ where: { role } })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving courierboys.",
+      });
+    });
+};
+
