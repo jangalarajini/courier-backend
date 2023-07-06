@@ -21,6 +21,7 @@ exports.create = (req, res) => {
     error.statusCode = 400;  
   }else if(req.body.pathId == undefined){
    cosnt error = new Error("pathId cannot be empty for order");
+   error.statusCode = 400;
  }
   // Create an Order
   const order = {
