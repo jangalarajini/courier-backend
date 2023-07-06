@@ -20,7 +20,7 @@ exports.create = (req, res) => {
     const error = new Error("courierBoy Id cannot be empty for order");
     error.statusCode = 400;  
   }else if(req.body.pathId == undefined){
-   cosnt error = new Error("pathId cannot be empty for order");
+   const error = new Error("pathId cannot be empty for order");
    error.statusCode = 400;
  }
   // Create an Order
