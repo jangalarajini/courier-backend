@@ -113,10 +113,4 @@ db.edge.belongsTo(
   { foreignKey: { name: "targetnodeid", allowNull: false }, onDelete: "CASCADE" }
 );
 
-
-
-
-
-
-
 module.exports = db;
