@@ -19,8 +19,9 @@ exports.create = (req, res) => {
   }else if (req.body.courierBoyId == undefined){
     const error = new Error("courierBoy Id cannot be empty for order");
     error.statusCode = 400;  
-  }
-
+  }else if(req.body.pathId == undefined){
+   cosnt error = new Error("pathId cannot be empty for order");
+ }
   // Create an Order
   const order = {
     bill: req.body.bill,
@@ -32,6 +33,7 @@ exports.create = (req, res) => {
     clerkId : req.body.clerkId,
     customerId : req.body.customerId,
     courierBoyId : req.body.courierBoyId,
+    pathId : req.body.pathId,
   };
 
   // Save Order in the database
