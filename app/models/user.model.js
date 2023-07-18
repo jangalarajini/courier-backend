@@ -21,6 +21,7 @@ module.exports = (sequelize, Sequelize) => {
     role: {
       type: Sequelize.STRING,
       allowNull: false,
+      defaultValue: "courier",
     },
     isOccupied: {
       type: Sequelize.BOOLEAN,
