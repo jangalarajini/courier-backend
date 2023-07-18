@@ -5,6 +5,10 @@ module.exports = (app) => {
   
     // Create a new Order
     router.post("/orders/", [authenticateRoute], Order.create);
+
+   // Get All Orders for UserId
+    router.get(
+      "/orders/user/:userId",[authenticateRoute],Order.findAllForUser );
   
     // Retrieve all Orders
     router.get("/orders/", Order.findAll);

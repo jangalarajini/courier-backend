@@ -5,11 +5,11 @@ const Op = db.Sequelize.Op;
 // Create and Save a new Customer
 exports.create = (req, res) => {
   // Validate request
-  if (req.body.customerNumber === undefined) {
+  if (req.body.number === undefined) {
     const error = new Error("Customer number cannot be empty!");
     error.statusCode = 400;
     throw error;
-  } else if (req.body.customerName === undefined) {
+  } else if (req.body.name === undefined) {
     const error = new Error("Customer name cannot be empty!");
     error.statusCode = 400;
     throw error;
@@ -21,14 +21,19 @@ exports.create = (req, res) => {
     const error = new Error("Delivery Instructions cannot be empty!");
     error.statusCode = 400;
     throw error;
-  } 
+  }  else if (req.body.companyId ===  undefined) {
+    const error = new Error("companyId cannot be empty");
+    error.statusCode = 400;
+    throw error;
+  }
 
   // Create a Customer
   const customer = {
-    customerNumber: req.body.customerNumber,
-    customerName: req.body.customerName,
+    number: req.body.number,
+    name: req.body.name,
     location: req.body.location,
     deliveryInstructions: req.body.deliveryInstructions,
+    companyId: req.body.companyId,
   };
 
   // Save Customer in the database
@@ -46,11 +51,11 @@ exports.create = (req, res) => {
 
 // Retrieve all Customers from the database.
 exports.findAll = (req, res) => {
-  const customerNumber = req.query.customerNumber;
-  const condition = customerNumber
+  const number = req.query.number;
+  const condition = number
     ? {
-        customerNumber: {
-          [Op.like]: `%${customerNumber}%`,
+        number: {
+          [Op.like]: `%${number}%`,
         },
       }
     : null;
