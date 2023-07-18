@@ -1,10 +1,10 @@
 module.exports = (sequelize, Sequelize) => {
     const Customer = sequelize.define("customer", {
-      customerNumber: {
+      number: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      customerName: {
+      name: {
         type: Sequelize.STRING,
         allowNull: false,
       },
