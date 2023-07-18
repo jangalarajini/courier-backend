@@ -19,6 +19,10 @@ exports.create = (req, res) => {
   }else if (req.body.targetid == undefined){
     const error = new Error("target Id cannot be empty for order");
     error.statusCode = 400;  
+  } else if (req.body.companyId ===  undefined) {
+    const error = new Error("companyId cannot be empty");
+    error.statusCode = 400;
+    throw error;
   }
 
   // Create a Edge
@@ -27,6 +31,7 @@ exports.create = (req, res) => {
     cost: req.body.cost,
     sourceid: req.body.sourceid,
     targetid: req.body.targetid,
+    companyId: req.body.companyId,
   };
 
   // Save Edge in the database
