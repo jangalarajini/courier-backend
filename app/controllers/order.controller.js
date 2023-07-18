@@ -1,40 +1,40 @@
 const db = require("../models");
 const Order = db.order;
 const Op = db.Sequelize.Op;
+const User = db.user;
+const Customer = db.customer;
+const Path = db.path;
 
 // Create and Save a new Order
 exports.create = (req, res) => {
   // Validate request
- if (req.body.orderType === undefined) {
-    const error = new Error("Order type cannot be empty!");
-    error.statusCode = 400;
-    throw error;
-  } else if (req.body.clerkId === undefined) {
+ if (req.body.clerkId === undefined) {
     const error = new Error("Clerk Id cannot be empty for order");
     error.statusCode = 400;
     throw error;
-  } else if (req.body.customerId == undefined){
-    const error = new Error("customer Id cannot be empty for order");
+  } else if (req.body.pickUpCustomerId == undefined){
+    const error = new Error("pick up customer Id cannot be empty for order");
     error.statusCode = 400;  
-  }else if (req.body.courierBoyId == undefined){
-    const error = new Error("courierBoy Id cannot be empty for order");
+  }else if (req.body.dropOffCustomerId == undefined){
+    const error = new Error("drop off customer Id cannot be empty for order");
     error.statusCode = 400;  
-  }else if(req.body.pathId == undefined){
-   const error = new Error("pathId cannot be empty for order");
-   error.statusCode = 400;
- }
+  } else if (req.body.companyId ===  undefined) {
+  const error = new Error("companyId cannot be empty");
+  error.statusCode = 400;
+  throw error;
+}
   // Create an Order
   const order = {
     bill: req.body.bill,
-    orderType: req.body.orderType,
     estimatedTime: req.body.estimatedTime,
-    startAddress: req.body.startAddress,
     status: req.body.status,
     bonus: req.body.bonus,
     clerkId : req.body.clerkId,
-    customerId : req.body.customerId,
-    courierBoyId : req.body.courierBoyId,
+    pickUpCustomerId : req.body.pickUpCustomerId,
+    dropOffCustomerId : req.body.dropOffCustomerId,
+    courierId : req.body.courierId,
     pathId : req.body.pathId,
+    companyId: req.body.companyId,
   };
 
   // Save Order in the database
@@ -45,6 +45,58 @@ exports.create = (req, res) => {
     .catch((err) => {
       res.status(500).send({
         message: err.message || "Some error occurred while creating the Order.",
+      });
+    });
+};
+
+// Find all Trips for a user
+exports.findAllForUser = (req, res) => {
+  const userId = req.params.userId;
+  Order.findAll({
+    include: [
+      {
+        model: User,
+        as: 'clerk', 
+        where: { id: userId }
+      },
+      {
+        model: Customer,
+        as: "pickUpCustomer",
+        required: true,
+      },
+      {
+        model: Customer,
+        as: "dropOffCustomer",
+        required: true,
+      },
+      {
+        model: User,
+        as: "courier", 
+        required: false,
+      },
+      {
+        model: Path,
+        as: "path",
+        required: false,
+      },
+    ],
+    order: [
+      ["createdAt", "ASC"],
+    ],
+  })
+    .then((data) => {
+      if (data) {
+        res.send(data);
+      } else {
+        res.status(404).send({
+          message: `Cannot find Orders for user with id=${userId}.`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message:
+          err.message || "Error retrieving Orders for user with id=" + userId,
       });
     });
 };
@@ -60,7 +112,38 @@ exports.findAll = (req, res) => {
       }
     : null;
 
-  Order.findAll({ where: condition })
+  Order.findAll({
+    include: [
+      {
+        model: User,
+        as: "clerk", 
+        required: false,
+      },
+      {
+        model: Customer,
+        as: "pickUpCustomer",
+        required: true,
+      },
+      {
+        model: Customer,
+        as: "dropOffCustomer",
+        required: true,
+      },
+      {
+        model: User,
+        as: "courier", 
+        required: false,
+      },
+      {
+        model: Path,
+        as: "path",
+        required: false,
+      },
+    ],
+    order: [
+      ["createdAt", "ASC"],
+    ],
+  })
     .then((data) => {
       res.send(data);
     })
