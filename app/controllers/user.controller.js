@@ -27,6 +27,10 @@ exports.create = async (req, res) => {
     const error = new Error("role cannot be empty for user!");
     error.statusCode = 400;
     throw error;
+  }else if (req.body.companyId ===  undefined) {
+    const error = new Error("companyId cannot be empty");
+    error.statusCode = 400;
+    throw error;
   }
 
   // find by email
@@ -51,6 +55,7 @@ exports.create = async (req, res) => {
           lastName: req.body.lastName,
           email: req.body.email,
           role: req.body.role,
+          companyId: req.body.companyId,
           password: hash,
           salt: salt,
         };
@@ -239,15 +244,15 @@ exports.findAllClerks = (req, res) => {
     });
 };
 
-exports.findAllCourierBoys = (req, res) => {
-  const role = 'courierboy';
+exports.findAllCouriers = (req, res) => {
+  const role = 'courier';
   User.findAll({ where: { role } })
     .then((data) => {
       res.send(data);
     })
     .catch((err) => {
       res.status(500).send({
-        message: err.message || "Some error occurred while retrieving courierboys.",
+        message: err.message || "Some error occurred while retrieving Couriers.",
       });
     });
 };

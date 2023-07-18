@@ -24,8 +24,8 @@ module.exports = (app) => {
     // Retrieve all clerks
     router.get("/clerks/", User.findAllClerks);
 
-    // Retrieve all courierboys
-    router.get("/courierboys/", User.findAllCourierBoys);
+    // Retrieve all Couriers
+    router.get("/couriers/", User.findAllCouriers);
   
     app.use("/courierapi", router);
   };
