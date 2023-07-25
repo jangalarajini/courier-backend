@@ -1,6 +1,7 @@
 const db = require("../models");
 const Edge = db.edge;
 const Op = db.Sequelize.Op;
+const Node = db.node;
 
 // Create and Save a new Edge
 exports.create = (req, res) => {
@@ -9,10 +10,10 @@ exports.create = (req, res) => {
     const error = new Error("cost number cannot be empty!");
     error.statusCode = 400;
     throw error;
-  } else if (req.body.sourcenodeid == undefined){
+  } else if (req.body.sourceNodeId == undefined){
     const error = new Error("sourcenode Id cannot be empty for order");
     error.statusCode = 400;  
-  }else if (req.body.targetnodeid == undefined){
+  }else if (req.body.targetNodeId == undefined){
     const error = new Error("targetnode Id cannot be empty for order");
     error.statusCode = 400;  
   } else if (req.body.companyId ===  undefined) {
@@ -24,8 +25,8 @@ exports.create = (req, res) => {
   // Create a Edge
   const edge = {
     cost: req.body.cost,
-    sourcenodeid: req.body.sourcenodeid,
-    targetnodeid: req.body.targetnodeid,
+    sourceNodeId: req.body.sourceNodeId,
+    targetNodeId: req.body.targetNodeId,
     companyId: req.body.companyId,
   };
 
@@ -53,7 +54,22 @@ exports.findAll = (req, res) => {
         }
       : null;
   
-    Edge.findAll({ where: condition })
+    Edge.findAll({ include: [
+      {
+        model: Node,
+        as: "sourceNode", 
+        required: false,
+      },
+      {
+        model: Node,
+        as: "targetNode",
+        required: true,
+      },
+    ],
+    edge: [
+      ["createdAt", "ASC"],
+    ],
+  })
       .then((data) => {
         res.send(data);
       })
