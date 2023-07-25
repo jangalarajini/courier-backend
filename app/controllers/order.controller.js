@@ -8,11 +8,7 @@ const Path = db.path;
 // Create and Save a new Order
 exports.create = (req, res) => {
   // Validate request
- if (req.body.clerkId === undefined) {
-    const error = new Error("Clerk Id cannot be empty for order");
-    error.statusCode = 400;
-    throw error;
-  } else if (req.body.pickUpCustomerId == undefined){
+ if (req.body.pickUpCustomerId == undefined){
     const error = new Error("pick up customer Id cannot be empty for order");
     error.statusCode = 400;  
   }else if (req.body.dropOffCustomerId == undefined){
@@ -26,14 +22,23 @@ exports.create = (req, res) => {
   // Create an Order
   const order = {
     bill: req.body.bill,
-    estimatedTime: req.body.estimatedTime,
+    estimatedDropOffTime: req.body.estimatedDropOffTime,
+    estimatedPickUpTime: req.body.estimatedPickUpTime,
+    estimatedStartTime: req.body.estimatedStartTime,
+    requestedPickUpTime: req.body.requestedPickUpTime,
+    actualDropOffTime: req.body.actualDropOffTime,
+    actualStartTime: req.body.actualStartTime,
+    actualPickUpTime: req.body.actualPickUpTime,
     status: req.body.status,
     bonus: req.body.bonus,
     clerkId : req.body.clerkId,
+    adminId : req.body.adminId,
     pickUpCustomerId : req.body.pickUpCustomerId,
     dropOffCustomerId : req.body.dropOffCustomerId,
     courierId : req.body.courierId,
-    pathId : req.body.pathId,
+    officeToPickUpCustomerPathId : req.body.officeToPickUpCustomerPathId,
+    pickUpCustomerToDropOffCustomerPathId: req.body.pickUpCustomerToDropOffCustomerPathId,
+    dropOffCustomerToOfficePathId: req.body.dropOffCustomerToOfficePathId,
     companyId: req.body.companyId,
   };
 
@@ -49,20 +54,15 @@ exports.create = (req, res) => {
     });
 };
 
-// Find all Trips for a user
-exports.findAllForUser = (req, res) => {
-  const userId = req.params.userId;
+// Find all Orders for a user
+exports.findAllForCustomer = (req, res) => {
+  const customerId = req.params.customerId;
   Order.findAll({
     include: [
       {
-        model: User,
-        as: 'clerk', 
-        where: { id: userId }
-      },
-      {
         model: Customer,
-        as: "pickUpCustomer",
-        required: true,
+        as: 'pickUpCustomer', 
+        where: { id: customerId }
       },
       {
         model: Customer,
@@ -71,12 +71,27 @@ exports.findAllForUser = (req, res) => {
       },
       {
         model: User,
+        as: "clerk", 
+        required: false,
+      },
+      {
+        model: User,
         as: "courier", 
         required: false,
       },
       {
         model: Path,
-        as: "path",
+        as: "officeToPickUpCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "pickUpCustomerToDropOffCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "dropOffCustomerToOfficePath",
         required: false,
       },
     ],
@@ -101,7 +116,334 @@ exports.findAllForUser = (req, res) => {
     });
 };
 
-// Retrieve all Orders from the database.
+// Find all Orders for a cusatomer
+exports.findAllForClerk = (req, res) => {
+  const clerkId = req.params.clerkId;
+  Order.findAll({
+    include: [
+      {
+        model: User,
+        as: 'clerk', 
+        where: { id: clerkId }
+      },
+      {
+        model: Customer,
+        as: "pickUpCustomer",
+        required: true,
+      },
+      {
+        model: Customer,
+        as: "dropOffCustomer",
+        required: true,
+      },
+      {
+        model: User,
+        as: "courier", 
+        required: false,
+      },
+      {
+        model: Path,
+        as: "officeToPickUpCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "pickUpCustomerToDropOffCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "dropOffCustomerToOfficePath",
+        required: false,
+      },
+    ],
+    order: [
+      ["createdAt", "ASC"],
+    ],
+  })
+    .then((data) => {
+      if (data) {
+        res.send(data);
+      } else {
+        res.status(404).send({
+          message: `Cannot find Orders for user with id=${userId}.`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message:
+          err.message || "Error retrieving Orders for user with id=" + userId,
+      });
+    });
+};
+
+exports.findAllForAdmin = (req, res) => {
+  const adminId = req.params.adminId;
+  Order.findAll({
+    include: [
+      {
+        model: User,
+        as: 'admin', 
+        where: { id: adminId }
+      },
+      {
+        model: Customer,
+        as: "pickUpCustomer",
+        required: true,
+      },
+      {
+        model: Customer,
+        as: "dropOffCustomer",
+        required: true,
+      },
+      {
+        model: User,
+        as: "courier", 
+        required: false,
+      },
+      {
+        model: Path,
+        as: "officeToPickUpCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "pickUpCustomerToDropOffCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "dropOffCustomerToOfficePath",
+        required: false,
+      },
+    ],
+    order: [
+      ["createdAt", "ASC"],
+    ],
+  })
+    .then((data) => {
+      if (data) {
+        res.send(data);
+      } else {
+        res.status(404).send({
+          message: `Cannot find Orders for user with id=${userId}.`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message:
+          err.message || "Error retrieving Orders for user with id=" + userId,
+      });
+    });
+};
+
+exports.findAllForCourier = (req, res) => {
+  const courierId = req.params.courierId;
+  const status = req.query.status;
+
+  const condition = {
+    courierId: courierId,
+    status: status,
+  };
+
+  Order.findAll({
+    where: condition,
+    include: [
+      {
+        model: User,
+        as: 'courier', 
+        where: { id: courierId }
+      },
+      {
+        model: Customer,
+        as: "pickUpCustomer",
+        required: true,
+      },
+      {
+        model: Customer,
+        as: "dropOffCustomer",
+        required: true,
+      },
+      {
+        model: User,
+        as: "clerk", 
+        required: false,
+      },
+      {
+        model: Path,
+        as: "officeToPickUpCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "pickUpCustomerToDropOffCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "dropOffCustomerToOfficePath",
+        required: false,
+      },
+    ],
+    order: [
+      ["createdAt", "ASC"],
+    ],
+  })
+    .then((data) => {
+      if (data) {
+        res.send(data);
+      } else {
+        res.status(404).send({
+          message: `Cannot find Orders for user with id=${userId}.`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message:
+          err.message || "Error retrieving Orders for user with id=" + userId,
+      });
+    });
+};
+
+exports.findAllForCourierInProgress = (req, res) => {
+  const courierId = req.params.courierId;
+  const status = 'InProgress';
+
+  const condition = {
+    courierId: courierId,
+    status: status,
+  };
+
+  Order.findAll({
+    where: condition,
+    include: [
+      {
+        model: User,
+        as: 'courier', 
+        where: { id: courierId }
+      },
+      {
+        model: Customer,
+        as: "pickUpCustomer",
+        required: true,
+      },
+      {
+        model: Customer,
+        as: "dropOffCustomer",
+        required: true,
+      },
+      {
+        model: User,
+        as: "clerk", 
+        required: false,
+      },
+      {
+        model: Path,
+        as: "officeToPickUpCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "pickUpCustomerToDropOffCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "dropOffCustomerToOfficePath",
+        required: false,
+      },
+    ],
+    order: [
+      ["createdAt", "ASC"],
+    ],
+  })
+    .then((data) => {
+      if (data) {
+        res.send(data);
+      } else {
+        res.status(404).send({
+          message: `Cannot find Orders for user with id=${userId}.`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Error retrieving Orders for user with id=" + userId,
+      });
+    });
+};
+
+exports.findAllForCourierCompleted = (req, res) => {
+  const courierId = req.params.courierId;
+  const status = 'Completed';
+
+  const condition = {
+    courierId: courierId,
+    status: status,
+  };
+
+  Order.findAll({
+    where: condition,
+    include: [
+      {
+        model: User,
+        as: 'courier', 
+        where: { id: courierId }
+      },
+      {
+        model: Customer,
+        as: "pickUpCustomer",
+        required: true,
+      },
+      {
+        model: Customer,
+        as: "dropOffCustomer",
+        required: true,
+      },
+      {
+        model: User,
+        as: "clerk", 
+        required: false,
+      },
+      {
+        model: Path,
+        as: "officeToPickUpCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "pickUpCustomerToDropOffCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "dropOffCustomerToOfficePath",
+        required: false,
+      },
+    ],
+    order: [
+      ["createdAt", "ASC"],
+    ],
+  })
+    .then((data) => {
+      if (data) {
+        res.send(data);
+      } else {
+        res.status(404).send({
+          message: `Cannot find Orders for user with id=${userId}.`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Error retrieving Orders for user with id=" + userId,
+      });
+    });
+};
+
 exports.findAll = (req, res) => {
   const orderId = req.query.orderId;
   const condition = orderId
@@ -136,7 +478,17 @@ exports.findAll = (req, res) => {
       },
       {
         model: Path,
-        as: "path",
+        as: "officeToPickUpCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "pickUpCustomerToDropOffCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "dropOffCustomerToOfficePath",
         required: false,
       },
     ],
