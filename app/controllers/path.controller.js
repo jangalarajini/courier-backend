@@ -134,6 +134,24 @@ exports.delete = (req, res) => {
     });
 };
 
+exports.findBySourceAndTarget = async (req, res) => {
+  const { sourceId, targetId } = req.params;
+
+  try {
+    const path = await Path.findOne({ where: { sourceid: sourceId, targetid: targetId } });
+
+    if (!path) {
+      return res.status(404).json({ message: "Path not found" });
+    }
+
+    return res.json(path);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
 // Delete all Edges from the database.
 exports.deleteAll = (req, res) => {
   Path.destroy({

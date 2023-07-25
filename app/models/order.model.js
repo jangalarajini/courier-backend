@@ -4,7 +4,19 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.FLOAT,
         allowNull: true,
       },
-      estimatedTime: {
+      estimatedDropOffTime: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      estimatedPickUpTime: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      estimatedStartTime: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      requestedPickUpTime: {
         type: Sequelize.STRING,
         allowNull: true,
       },
@@ -14,6 +26,18 @@ module.exports = (sequelize, Sequelize) => {
       },
       bonus: {
         type: Sequelize.FLOAT,
+        allowNull: true,
+      },
+      actualDropOffTime: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      actualStartTime: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      actualPickUpTime: {
+        type: Sequelize.STRING,
         allowNull: true,
       },
     });
