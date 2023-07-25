@@ -69,12 +69,22 @@ db.order.belongsTo(
 
 db.user.hasMany(
   db.order,
-   { foreignKey: { name: "clerkId", allowNull: false }, onDelete: "CASCADE" }
+   { foreignKey: { name: "clerkId", allowNull: true }, onDelete: "CASCADE" }
 );
 db.order.belongsTo(
   db.user, 
   { as: "clerk" },
-  { foreignKey: { name: "clerkId", allowNull: false }, onDelete: "CASCADE" }
+  { foreignKey: { name: "clerkId", allowNull: true }, onDelete: "CASCADE" }
+);
+
+db.user.hasMany(
+  db.order,
+   { foreignKey: { name: "adminId", allowNull: true }, onDelete: "CASCADE" }
+);
+db.order.belongsTo(
+  db.user, 
+  { as: "admin" },
+  { foreignKey: { name: "adminId", allowNull: true }, onDelete: "CASCADE" }
 );
 
 db.customer.hasMany(
@@ -99,12 +109,32 @@ db.order.belongsTo(
 
 db.path.hasOne(
   db.order,
-  { foreignKey: { name: "pathId", allowNull: true }, onDelete: "CASCADE" }
+  { foreignKey: { name: "officeToPickUpCustomerPathId", allowNull: true }, onDelete: "CASCADE" }
 );
 db.order.belongsTo(
   db.path,
-  { as: "path" },
-  { foreignKey: { name: "pathId", allowNull: true }, onDelete: "CASCADE" }
+  { as: "officeToPickUpCustomerPath" },
+  { foreignKey: { name: "officeToPickUpCustomerPathId", allowNull: true }, onDelete: "CASCADE" }
+);
+
+db.path.hasOne(
+  db.order,
+  { foreignKey: { name: "pickUpCustomerToDropOffCustomerPathId", allowNull: true }, onDelete: "CASCADE" }
+);
+db.order.belongsTo(
+  db.path,
+  { as: "pickUpCustomerToDropOffCustomerPath" },
+  { foreignKey: { name: "pickUpCustomerToDropOffCustomerPathId", allowNull: true }, onDelete: "CASCADE" }
+);
+
+db.path.hasOne(
+  db.order,
+  { foreignKey: { name: "dropOffCustomerToOfficePathId", allowNull: true }, onDelete: "CASCADE" }
+);
+db.order.belongsTo(
+  db.path,
+  { as: "dropOffCustomerToOfficePath" },
+  { foreignKey: { name: "dropOffCustomerToOfficePathId", allowNull: true }, onDelete: "CASCADE" }
 );
 
 // foreign keys for path
@@ -140,6 +170,8 @@ db.path.belongsTo(
 
 // foreign keys for edge
 
+// foreign keys for edge
+
 db.company.hasMany(
   db.edge,
   { foreignKey: { name:"companyId", allowNull: false }, onDelete: "CASCADE" }
@@ -149,24 +181,26 @@ db.edge.belongsTo(
   { foreignKey: { name:"companyId", allowNull: false }, onDelete: "CASCADE" }
 );
 
-
 db.node.hasMany(
   db.edge, 
-  { foreignKey: { name: "sourcenodeid", allowNull: false }, onDelete: "CASCADE" }
+  { foreignKey: { name: "sourceNodeId", allowNull: false }, onDelete: "CASCADE" }
 );
 db.edge.belongsTo(
   db.node,
-   { foreignKey: { name: "sourcenodeid", allowNull: false }, onDelete: "CASCADE" }
+  { as: "sourceNode" },
+   { foreignKey: { name: "sourceNodeId", allowNull: false }, onDelete: "CASCADE" }
 );
 
 db.node.hasMany(
   db.edge,
-   { foreignKey: { name: "targetnodeid", allowNull: false }, onDelete: "CASCADE" })
+   { foreignKey: { name: "targetNodeId", allowNull: false }, onDelete: "CASCADE" })
 ;
 db.edge.belongsTo(
   db.node,
-  { foreignKey: { name: "targetnodeid", allowNull: false }, onDelete: "CASCADE" }
+  { as: "targetNode" },
+  { foreignKey: { name: "targetNodeId", allowNull: false }, onDelete: "CASCADE" }
 );
+
 
 // foreign keys for node
 
