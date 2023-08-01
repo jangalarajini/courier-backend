@@ -167,7 +167,8 @@ exports.findByEmail = (req, res) => {
 // Update a User by the id in the request
 exports.update = (req, res) => {
   const id = req.params.id;
-
+  delete req.body["password"];
+  delete req.body["salt"];
   User.update(req.body, {
     where: { id: id },
   })
