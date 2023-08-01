@@ -4,21 +4,22 @@ const Op = db.Sequelize.Op;
 const User = db.user;
 const Customer = db.customer;
 const Path = db.path;
+const { Sequelize } = require("sequelize");
 
 // Create and Save a new Order
 exports.create = (req, res) => {
   // Validate request
- if (req.body.pickUpCustomerId == undefined){
+  if (req.body.pickUpCustomerId == undefined) {
     const error = new Error("pick up customer Id cannot be empty for order");
-    error.statusCode = 400;  
-  }else if (req.body.dropOffCustomerId == undefined){
+    error.statusCode = 400;
+  } else if (req.body.dropOffCustomerId == undefined) {
     const error = new Error("drop off customer Id cannot be empty for order");
-    error.statusCode = 400;  
-  } else if (req.body.companyId ===  undefined) {
-  const error = new Error("companyId cannot be empty");
-  error.statusCode = 400;
-  throw error;
-}
+    error.statusCode = 400;
+  } else if (req.body.companyId === undefined) {
+    const error = new Error("companyId cannot be empty");
+    error.statusCode = 400;
+    throw error;
+  }
   // Create an Order
   const order = {
     bill: req.body.bill,
@@ -31,12 +32,12 @@ exports.create = (req, res) => {
     actualPickUpTime: req.body.actualPickUpTime,
     status: req.body.status,
     bonus: req.body.bonus,
-    clerkId : req.body.clerkId,
-    adminId : req.body.adminId,
-    pickUpCustomerId : req.body.pickUpCustomerId,
-    dropOffCustomerId : req.body.dropOffCustomerId,
-    courierId : req.body.courierId,
-    officeToPickUpCustomerPathId : req.body.officeToPickUpCustomerPathId,
+    clerkId: req.body.clerkId,
+    adminId: req.body.adminId,
+    pickUpCustomerId: req.body.pickUpCustomerId,
+    dropOffCustomerId: req.body.dropOffCustomerId,
+    courierId: req.body.courierId,
+    officeToPickUpCustomerPathId: req.body.officeToPickUpCustomerPathId,
     pickUpCustomerToDropOffCustomerPathId: req.body.pickUpCustomerToDropOffCustomerPathId,
     dropOffCustomerToOfficePathId: req.body.dropOffCustomerToOfficePathId,
     companyId: req.body.companyId,
@@ -57,11 +58,16 @@ exports.create = (req, res) => {
 // Find all Orders for a user
 exports.findAllForCustomer = (req, res) => {
   const customerId = req.params.customerId;
+  const status = 'Delivered';
+  const condition = {
+    status: status,
+  };
   Order.findAll({
+    where: condition,
     include: [
       {
         model: Customer,
-        as: 'pickUpCustomer', 
+        as: 'pickUpCustomer',
         where: { id: customerId }
       },
       {
@@ -71,12 +77,12 @@ exports.findAllForCustomer = (req, res) => {
       },
       {
         model: User,
-        as: "clerk", 
+        as: "clerk",
         required: false,
       },
       {
         model: User,
-        as: "courier", 
+        as: "courier",
         required: false,
       },
       {
@@ -123,7 +129,7 @@ exports.findAllForClerk = (req, res) => {
     include: [
       {
         model: User,
-        as: 'clerk', 
+        as: 'clerk',
         where: { id: clerkId }
       },
       {
@@ -138,7 +144,7 @@ exports.findAllForClerk = (req, res) => {
       },
       {
         model: User,
-        as: "courier", 
+        as: "courier",
         required: false,
       },
       {
@@ -158,6 +164,13 @@ exports.findAllForClerk = (req, res) => {
       },
     ],
     order: [
+      [Sequelize.literal(`CASE 
+      WHEN status = 'Created' THEN 1
+      WHEN status = 'Pending' THEN 2
+      WHEN status = 'PickedUp' THEN 3
+      WHEN status = 'Delivered' THEN 4
+      ELSE 5
+   END`), 'ASC'],
       ["createdAt", "ASC"],
     ],
   })
@@ -184,7 +197,7 @@ exports.findAllForAdmin = (req, res) => {
     include: [
       {
         model: User,
-        as: 'admin', 
+        as: 'admin',
         where: { id: adminId }
       },
       {
@@ -199,7 +212,7 @@ exports.findAllForAdmin = (req, res) => {
       },
       {
         model: User,
-        as: "courier", 
+        as: "courier",
         required: false,
       },
       {
@@ -253,7 +266,7 @@ exports.findAllForCourier = (req, res) => {
     include: [
       {
         model: User,
-        as: 'courier', 
+        as: 'courier',
         where: { id: courierId }
       },
       {
@@ -268,7 +281,7 @@ exports.findAllForCourier = (req, res) => {
       },
       {
         model: User,
-        as: "clerk", 
+        as: "clerk",
         required: false,
       },
       {
@@ -310,11 +323,13 @@ exports.findAllForCourier = (req, res) => {
 
 exports.findAllForCourierInProgress = (req, res) => {
   const courierId = req.params.courierId;
-  const status = 'InProgress';
+  const status = 'Delivered';
 
   const condition = {
     courierId: courierId,
-    status: status,
+    status: {
+      [Op.ne]: status,
+    },
   };
 
   Order.findAll({
@@ -322,7 +337,7 @@ exports.findAllForCourierInProgress = (req, res) => {
     include: [
       {
         model: User,
-        as: 'courier', 
+        as: 'courier',
         where: { id: courierId }
       },
       {
@@ -337,7 +352,7 @@ exports.findAllForCourierInProgress = (req, res) => {
       },
       {
         model: User,
-        as: "clerk", 
+        as: "clerk",
         required: false,
       },
       {
@@ -378,7 +393,7 @@ exports.findAllForCourierInProgress = (req, res) => {
 
 exports.findAllForCourierCompleted = (req, res) => {
   const courierId = req.params.courierId;
-  const status = 'Completed';
+  const status = 'Delivered';
 
   const condition = {
     courierId: courierId,
@@ -390,7 +405,7 @@ exports.findAllForCourierCompleted = (req, res) => {
     include: [
       {
         model: User,
-        as: 'courier', 
+        as: 'courier',
         where: { id: courierId }
       },
       {
@@ -405,7 +420,7 @@ exports.findAllForCourierCompleted = (req, res) => {
       },
       {
         model: User,
-        as: "clerk", 
+        as: "clerk",
         required: false,
       },
       {
@@ -448,17 +463,17 @@ exports.findAll = (req, res) => {
   const orderId = req.query.orderId;
   const condition = orderId
     ? {
-        id: {
-          [Op.like]: `%${orderId}%`,
-        },
-      }
+      id: {
+        [Op.like]: `%${orderId}%`,
+      },
+    }
     : null;
 
   Order.findAll({
     include: [
       {
         model: User,
-        as: "clerk", 
+        as: "clerk",
         required: false,
       },
       {
@@ -473,7 +488,7 @@ exports.findAll = (req, res) => {
       },
       {
         model: User,
-        as: "courier", 
+        as: "courier",
         required: false,
       },
       {
@@ -493,6 +508,13 @@ exports.findAll = (req, res) => {
       },
     ],
     order: [
+      [Sequelize.literal(`CASE 
+      WHEN status = 'Created' THEN 1
+      WHEN status = 'Pending' THEN 2
+      WHEN status = 'PickedUp' THEN 3
+      WHEN status = 'Delivered' THEN 4
+      ELSE 5
+   END`), 'ASC'],
       ["createdAt", "ASC"],
     ],
   })
@@ -510,7 +532,45 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  Order.findByPk(id)
+  Order.findByPk(id, {
+    include: [
+      {
+        model: User,
+        as: "clerk",
+        required: false,
+      },
+      {
+        model: Customer,
+        as: "pickUpCustomer",
+        required: true,
+      },
+      {
+        model: Customer,
+        as: "dropOffCustomer",
+        required: true,
+      },
+      {
+        model: User,
+        as: "courier",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "officeToPickUpCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "pickUpCustomerToDropOffCustomerPath",
+        required: false,
+      },
+      {
+        model: Path,
+        as: "dropOffCustomerToOfficePath",
+        required: false,
+      },
+    ],
+  })
     .then((data) => {
       res.send(data);
     })
