@@ -28,6 +28,10 @@ module.exports = (sequelize, Sequelize) => {
       defaultValue: false,
       allowNull: true,
     },
+    order: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    },
     salt: {
       type: Sequelize.BLOB,
       allowNull: false,
