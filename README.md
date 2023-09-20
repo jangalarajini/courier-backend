@@ -46,8 +46,10 @@ npm install
 
    - Create a schema/database.
    - The Sequelize in this project will make all the tables for you.
+  
+5. 
 
-5. Add a local **.env** file and make sure that the **database** variables are correct.
+6. Add a local **.env** file and make sure that the **database** variables are correct.
 
    - DB_HOST = 'localhost'
    - DB_PW = '**your-local-database-password**'
@@ -55,7 +57,7 @@ npm install
    - DB_NAME = '**your-local-database-name**' (example: "recipe_db")
    - SECRET_KEY = 'xT1tdO3CfMH01pjxC+guN1LWSt2nKvr5td6KUpw7Czg='
 
-6. Compile and run the project locally.
+7. Compile and run the project locally.
 
 ```
 npm run start
